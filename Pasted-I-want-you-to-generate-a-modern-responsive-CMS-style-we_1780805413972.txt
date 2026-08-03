@@ -1,0 +1,64 @@
+I want you to generate a modern, responsive CMS-style website for the Statutory Probate Courts, Dallas County, Texas. The website should function as a Court Case Management System for users to search, view, and track probate cases. 
+
+Requirements:
+
+1. **Header / Landing Page**
+   - Large heading: "Statutory Probate Courts – Dallas County, Texas"
+   - Subheading: "Search and track probate case status securely online"
+   - Include a prominent **search box**:
+       - Users can search by: Case Number, File Number, or Party Name
+       - Dropdown or radio buttons to choose search type
+       - Search button
+
+2. **Search Results Page**
+   - Display a table or card layout showing:
+       - Case Number
+       - Case Title
+       - Last Court Date
+       - Next Court Date (or "Not Decided Yet" if pending)
+       - Case Status (Active, Closed, Pending)
+       - Last Paid Court Fee + Date
+       - Pending Court Fees
+       - Any applicable court fees
+       - Last Court Notice
+       - Recent Court Notices
+   - Each case should be clickable to show full details
+
+3. **Case Detail Page**
+   - Overview section:
+       - Case Number, Case Title, Case Type, Court Name, Presiding Officer, Case Category, Filing Date, Case Status, Stage
+   - Parties involved: Plaintiff, Defendant, and their Advocates
+   - Court Fees Summary: Paid, Pending, Total Applicable
+   - Notices: Last and Recent Court Notices
+   - Timeline / Hearing History
+   - Documents section: Uploads, PDFs, or related documents
+
+4. **Sidebar Navigation**
+   - Dashboard
+   - Case Search
+   - All Cases
+   - Parties
+   - Hearings / Dates
+   - Fees / Payments
+   - Notices
+   - Documents
+   - Reports
+   - Calendar
+   - Users
+   - Settings
+   - Audit Logs
+
+5. **Design Requirements**
+   - Clean, professional look suitable for a government website
+   - Easy-to-read fonts and clear visual hierarchy
+   - Responsive layout for desktop and mobile
+   - Use colors like dark blue, white, and accent colors for buttons
+   - Highlight important fields like case status and pending fees in color
+
+6. **Extra Features**
+   - Tabs for Overview, Hearings, Fees, Notices, Documents, and Activity Log on the case detail page
+   - Optional: Notifications for upcoming hearings or pending fees
+   - Pagination for search results
+   - Quick Actions like Upload Document, Make Payment, Add Note, Schedule Reminder
+
+Generate the **complete HTML, CSS, and JS** files to implement this website with sample data so that it can run immediately in Replit.

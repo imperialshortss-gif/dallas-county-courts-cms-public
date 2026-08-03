@@ -1,0 +1,95 @@
+I want you to enhance the existing Dallas County Statutory Probate Courts CMS by creating a **Case Record Entry Module** for administrators. The goal is to allow the creation of new case records and entry of historical and ongoing case data manually. **Do not pre-add any sample data or dates. All fields must be empty for the admin to fill in.**
+
+**Requirements:**
+
+1. **Access Control**
+   - Only authorized users (Admins or Court Clerks) can access this module.
+   - Public users can search and view cases but **cannot add or modify records**.
+   - Admin panel sections (Users, Settings, Audit Logs) must require login.
+
+2. **Case Creation Form**
+   - Fields:
+     - Case Number
+     - File Number
+     - Case Title
+     - Court Name (dropdown if multiple courts)
+     - Presiding Judge (dropdown)
+     - Courtroom
+     - Case Type (Civil, Probate, Family, etc.)
+     - Case Category (Contract, Estate, etc.)
+     - Filing Date (date picker)
+     - Current Case Status (Active, Pending, Hearing Scheduled, Closed)
+   - Optional Notes / Description
+   - No pre-filled data. All inputs must start empty.
+
+3. **Historical Data Entry Sections**
+   - **Hearing History**
+     - Add multiple previous hearings with:
+       - Hearing Date
+       - Type / Purpose
+       - Outcome / Remarks
+       - Next Court Date (optional)
+     - Allow admin to add as many entries as needed.
+   - **Fee History**
+     - Add previous fees with:
+       - Fee Type
+       - Amount Paid
+       - Date Paid
+       - Receipt Number
+     - Display all fee entries chronologically.
+   - **Notice History**
+     - Add previous notices with:
+       - Date
+       - Notice Type (Order, Summons, Directive)
+       - Description / Details
+     - Display all notices in chronological order.
+   - **Document Uploads**
+     - Upload documents for the case (Petitions, Orders, Receipts, Evidence)
+     - Allow multiple uploads; previous uploads should remain intact.
+   - **Status Updates**
+     - Add historical or current status changes
+     - Status options: Filed, Active, Awaiting Documents, Hearing Scheduled, Judgment Reserved, Closed
+     - Preserve chronological order
+
+4. **User Interface**
+   - Accessible from **Dashboard → Update Case → Add New Case**
+   - Use tabs or accordion sections for:
+     - Case Info
+     - Hearing History
+     - Fee History
+     - Notice History
+     - Documents
+     - Status History
+   - Clearly show which sections are editable
+   - Add buttons: “+ Add Hearing”, “+ Add Fee”, “+ Add Notice”, “+ Upload Document”, “+ Add Status”
+
+5. **Timeline / Activity Log**
+   - Automatically build a timeline from all historical entries and new updates
+   - Display chronological events:
+     - Hearings
+     - Fees Paid
+     - Notices Issued
+     - Status Changes
+   - Include timestamps of updates and user who entered them
+
+6. **Search Integration**
+   - Once a case is saved, it must become searchable via:
+     - Case Number
+     - File Number
+     - Party Name
+   - Do not allow searches to return empty or placeholder data.
+
+7. **Data Integrity**
+   - All updates should append to the database; historical entries should never be overwritten.
+   - Support unlimited historical entries for each section.
+
+8. **Optional Enhancements**
+   - Export case summary with all historical data to PDF
+   - Quick navigation to latest hearing, fee, or notice
+   - Highlight pending fees or upcoming next court dates
+
+**Deliverable**
+- Fully functional **Case Record Entry / Historical Data Module**
+- Empty fields with no pre-added data
+- Integrated into the existing Dallas County Probate Court CMS
+- Ready to run in Replit with secure admin access

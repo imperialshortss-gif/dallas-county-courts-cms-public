@@ -1,0 +1,70 @@
+I want you to enhance the existing Dallas County Statutory Probate Courts CMS by adding a **Case Update / Record module**. This module should allow authorized staff to update ongoing cases with details from previous and current activities.
+
+Requirements:
+
+1. **Select Case**
+   - Input: Case Number or File Number
+   - Display existing case summary (case title, parties, status, last court date, last paid fee, last notices)
+
+2. **Update Fields**
+   - **Hearing Details**
+     - Last Court Date (editable)
+     - Previous Court Dates (list all previous hearings)
+     - Next Court Date (or "Not Decided Yet")
+     - Courtroom
+     - Presiding Judge
+     - Hearing Outcome / Notes
+   - **Court Fees**
+     - Record Paid Fee Amount
+     - Fee Type / Category
+     - Payment Date
+     - Receipt Number
+     - Pending Fees (update if applicable)
+     - Historical fee records should remain visible
+   - **Notices**
+     - Add New Court Notice:
+       - Date
+       - Notice Type (Order, Summons, Directive)
+       - Description / Details
+     - Display Previous Notices and Recent Notices separately
+   - **Status**
+     - Case Status (Active, Pending, Hearing Scheduled, Judgment Reserved, Closed)
+     - Automatically log any changes to status in activity log
+   - **Documents**
+     - Upload new documents (court orders, affidavits, evidence)
+     - Keep historical documents intact
+
+3. **Activity Timeline**
+   - Automatically append all updates:
+     - Fee payments
+     - Hearings
+     - Notices
+     - Status changes
+   - Display with date and brief description
+   - Timeline should show both past (historical) and new entries
+
+4. **UI / Design**
+   - Accessible from each Case Detail page or Quick Actions bar
+   - Use tabs or sections for:
+     - Hearing Update
+     - Fee Update
+     - Notice Update
+     - Status Update
+     - Documents
+   - Display previous data clearly to avoid overwriting
+   - Use color-coded highlights for pending fees or upcoming hearings
+
+5. **Data Handling**
+   - Updates must **preserve historical data**
+   - Every new entry should append to the database without deleting previous records
+   - Activity log must show **who made the update and timestamp**
+
+6. **Optional Enhancements**
+   - Notifications for upcoming hearings based on Next Court Date
+   - Export case summary including previous hearings, fees, and notices as PDF
+
+Deliverable:
+- Fully functional **Case Update / Record form and logic**
+- Integrated into existing Dallas County Probate Court CMS
+- Connected to existing database tables for cases, hearings, fees, notices, documents, and activity log
+- Ready to run in Replit with sample historical and current data
