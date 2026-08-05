@@ -14,7 +14,7 @@ async function buildAll() {
   const distDir = path.resolve(artifactDir, "dist");
   await rm(distDir, { recursive: true, force: true });
 
-  const frontendSrc = path.resolve(artifactDir, "..", "probate-cms", "dist");
+  const frontendSrc = path.resolve(artifactDir, "..", "probate-cms", "dist", "public");
   const frontendDest = path.resolve(artifactDir, "artifacts", "probate-cms", "dist", "public");
   await mkdir(frontendDest, { recursive: true });
   await cp(frontendSrc, frontendDest, { recursive: true });
