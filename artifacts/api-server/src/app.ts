@@ -55,7 +55,7 @@ const sessionStore =
   isProduction && process.env["DATABASE_URL"]
     ? new PgStore({
         conString: process.env["DATABASE_URL"],
-        createTableIfMissing: true,
+        createTableIfMissing: false,
       })
     : undefined;
 
