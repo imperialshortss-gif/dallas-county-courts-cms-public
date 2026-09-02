@@ -8,5 +8,6 @@
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "buildCommand": "pnpm --dir lib/db run build && pnpm --dir lib/api-zod run build && pnpm --dir artifacts/probate-cms run build"
 }
