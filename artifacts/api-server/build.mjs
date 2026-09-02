@@ -32,8 +32,8 @@ async function buildAll() {
     // Examples of unbundleable packages:
     // - uses native modules and loads them dynamically (e.g. sharp)
     // - use path traversal to read files (e.g. @google-cloud/secret-manager loads sibling .proto files)
+    alias: { "@workspace/db": path.resolve(artifactDir, "..", "..", "lib", "db", "src", "index.ts") },
     external: [
-    "@workspace/db",
       "*.node",
       "sharp",
       "better-sqlite3",
