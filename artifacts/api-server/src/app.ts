@@ -6,7 +6,7 @@ import path from "path";
 import fs from "fs";
 import ConnectPgSimple from "connect-pg-simple";
 import router from "./routes/index.js";
-import { logger } from "./lib/logger";
+import { logger } from "./lib/logger.js";
 
 const app: Express = express();
 

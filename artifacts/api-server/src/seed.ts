@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { db } from "@workspace/db";
 import { usersTable } from "@workspace/db";
 import { sql } from "drizzle-orm";
-import { logger } from "./lib/logger";
+import { logger } from "./lib/logger.js";
 
 export async function seedDefaultUsers() {
   try {

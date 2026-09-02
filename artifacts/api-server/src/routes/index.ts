@@ -1,14 +1,14 @@
 import { Router, type IRouter } from "express";
-import healthRouter from "./health";
-import casesRouter from "./cases";
-import partiesRouter from "./parties";
-import hearingsRouter from "./hearings";
-import feesRouter from "./fees";
-import noticesRouter from "./notices";
-import documentsRouter from "./documents";
-import dashboardRouter from "./dashboard";
-import activityRouter from "./activity";
-import authRouter from "./auth";
+import healthRouter from "./health.js";
+import casesRouter from "./cases.js";
+import partiesRouter from "./parties.js";
+import hearingsRouter from "./hearings.js";
+import feesRouter from "./fees.js";
+import noticesRouter from "./notices.js";
+import documentsRouter from "./documents.js";
+import dashboardRouter from "./dashboard.js";
+import activityRouter from "./activity.js";
+import authRouter from "./auth.js";
 
 const router: IRouter = Router();
 

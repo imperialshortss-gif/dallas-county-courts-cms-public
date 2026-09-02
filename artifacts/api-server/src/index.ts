@@ -1,6 +1,6 @@
-import app from "./app";
-import { logger } from "./lib/logger";
-import { seedDefaultUsers } from "./seed";
+import app from "./app.js";
+import { logger } from "./lib/logger.js";
+import { seedDefaultUsers } from "./seed.js";
 
 const rawPort = process.env["PORT"];
 // Default to 3000 when PORT is not set (e.g. running locally outside Replit).
