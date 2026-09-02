@@ -4,3 +4,5 @@ git status
 **/dist/
 **/artifacts/
 *.tsbuildinfo
+.vercel
+.env*

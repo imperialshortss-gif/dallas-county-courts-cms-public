@@ -20,7 +20,7 @@ async function buildAll() {
   await cp(frontendSrc, frontendDest, { recursive: true });
 
   await esbuild({
-    entryPoints: [path.resolve(artifactDir, "src/index.ts")],
+    entryPoints: [path.resolve(artifactDir, "src/app.ts")],
     platform: "node",
     bundle: true,
     format: "esm",
