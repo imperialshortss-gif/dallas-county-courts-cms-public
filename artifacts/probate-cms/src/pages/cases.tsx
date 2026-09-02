@@ -32,7 +32,7 @@ export default function AllCases() {
         page: initialPage,
         pageSize: 20
       }),
-      keepPreviousData: true
+      placeholderData: (previousData) => previousData
     }
   });
 

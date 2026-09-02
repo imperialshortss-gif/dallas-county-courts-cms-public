@@ -40,7 +40,7 @@ export default function SearchCases() {
         page: initialPage,
         pageSize: 15
       }),
-      keepPreviousData: true
+      placeholderData: (previousData) => previousData
     }
   });
 

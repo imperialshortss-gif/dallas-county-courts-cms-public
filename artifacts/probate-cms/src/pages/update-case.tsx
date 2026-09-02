@@ -12,6 +12,7 @@ import {
   useCreateDocument,
   useCreateActivity,
   useUpdateCase,
+  CaseDetail,
 } from "@workspace/api-client-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -115,7 +116,7 @@ function CaseSearchPanel({ onSelect }: { onSelect: (id: number) => void }) {
   );
 }
 
-function CaseSummaryBanner({ caseDetail }: { caseDetail: NonNullable<ReturnType<typeof useGetCase>["data"]> }) {
+function CaseSummaryBanner({ caseDetail }: { caseDetail: CaseDetail }) {
   return (
     <Card className="border-l-4 border-l-primary bg-primary/5">
       <CardContent className="py-4">
@@ -135,7 +136,7 @@ function CaseSummaryBanner({ caseDetail }: { caseDetail: NonNullable<ReturnType<
             </div>
             <div>
               <p className="text-xs text-muted-foreground uppercase tracking-wide">Pending Fees</p>
-              <p className={cn("font-bold", caseDetail.pendingFees > 0 ? "text-amber-600" : "text-green-600")}>
+              <p className={cn("font-bold", (caseDetail.pendingFees ?? 0) > 0 ? "text-amber-600" : "text-green-600")}>
                 ${caseDetail.pendingFees?.toFixed(2) ?? "0.00"}
               </p>
             </div>
@@ -150,7 +151,7 @@ function CaseSummaryBanner({ caseDetail }: { caseDetail: NonNullable<ReturnType<
   );
 }
 
-function HearingUpdateTab({ caseDetail }: { caseDetail: NonNullable<ReturnType<typeof useGetCase>["data"]> }) {
+function HearingUpdateTab({ caseDetail }: { caseDetail: CaseDetail }) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const mutation = useCreateHearing();
@@ -351,7 +352,7 @@ function HearingUpdateTab({ caseDetail }: { caseDetail: NonNullable<ReturnType<t
   );
 }
 
-function FeeUpdateTab({ caseDetail }: { caseDetail: NonNullable<ReturnType<typeof useGetCase>["data"]> }) {
+function FeeUpdateTab({ caseDetail }: { caseDetail: CaseDetail }) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const mutation = useCreateFee();
@@ -565,7 +566,7 @@ function FeeUpdateTab({ caseDetail }: { caseDetail: NonNullable<ReturnType<typeo
   );
 }
 
-function NoticeUpdateTab({ caseDetail }: { caseDetail: NonNullable<ReturnType<typeof useGetCase>["data"]> }) {
+function NoticeUpdateTab({ caseDetail }: { caseDetail: CaseDetail }) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const mutation = useCreateNotice();
@@ -730,7 +731,7 @@ function NoticeUpdateTab({ caseDetail }: { caseDetail: NonNullable<ReturnType<ty
   );
 }
 
-function StatusUpdateTab({ caseDetail }: { caseDetail: NonNullable<ReturnType<typeof useGetCase>["data"]> }) {
+function StatusUpdateTab({ caseDetail }: { caseDetail: CaseDetail }) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const updateCaseMutation = useUpdateCase();
@@ -804,7 +805,7 @@ function StatusUpdateTab({ caseDetail }: { caseDetail: NonNullable<ReturnType<ty
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>New Case Status</Label>
-              <Select value={newStatus} onValueChange={v => setNewStatus(v)}>
+              <Select value={newStatus} onValueChange={v => setNewStatus(v as "Active" | "Closed" | "Pending")}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -865,7 +866,7 @@ function StatusUpdateTab({ caseDetail }: { caseDetail: NonNullable<ReturnType<ty
   );
 }
 
-function DocumentsTab({ caseDetail }: { caseDetail: NonNullable<ReturnType<typeof useGetCase>["data"]> }) {
+function DocumentsTab({ caseDetail }: { caseDetail: CaseDetail }) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const mutation = useCreateDocument();
@@ -1010,7 +1011,7 @@ function DocumentsTab({ caseDetail }: { caseDetail: NonNullable<ReturnType<typeo
   );
 }
 
-function ActivityTab({ caseDetail }: { caseDetail: NonNullable<ReturnType<typeof useGetCase>["data"]> }) {
+function ActivityTab({ caseDetail }: { caseDetail: CaseDetail }) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const mutation = useCreateActivity();
