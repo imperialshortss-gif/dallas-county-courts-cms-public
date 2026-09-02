@@ -99,7 +99,7 @@ router.post("/cases", requireAuth, async (req, res) => {
 // GET /cases/:id
 router.get("/cases/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(String(req.params.id), 10);
     const [caseRow] = await db.select().from(casesTable).where(eq(casesTable.id, id));
     if (!caseRow) {
       res.status(404).json({ error: "Case not found" });
@@ -133,7 +133,7 @@ router.get("/cases/:id", async (req, res) => {
 // PATCH /cases/:id
 router.patch("/cases/:id", requireAuth, async (req, res) => {
   try {
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(String(req.params.id), 10);
     const [updated] = await db.update(casesTable).set(req.body).where(eq(casesTable.id, id)).returning();
     if (!updated) {
       res.status(404).json({ error: "Case not found" });
