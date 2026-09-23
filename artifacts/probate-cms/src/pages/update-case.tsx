@@ -206,9 +206,12 @@ function HearingUpdateTab({ caseDetail }: { caseDetail: CaseDetail }) {
       return;
     }
 
-    mutation.mutate(
-      {
-        data: {
+    try {
+      const response = await fetch("/api/hearings", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           caseId: caseDetail.id,
           caseNumber: caseDetail.caseNumber,
           caseTitle: caseDetail.title,
@@ -218,19 +221,21 @@ function HearingUpdateTab({ caseDetail }: { caseDetail: CaseDetail }) {
           result: form.result,
           notes: form.notes || null,
           updatedBy: UPDATED_BY,
-        } as any,
-      },
-      {
-        onSuccess: () => {
-          toast({ title: "Hearing Recorded", description: "The hearing has been added and the case updated." });
-          setForm({ hearingDate: "", hearingType: "", courtRoom: caseDetail.courtName, result: "Scheduled", notes: "" });
-          qc.invalidateQueries({ queryKey: getGetCaseQueryKey(caseDetail.id) });
-        },
-        onError: () => {
-          toast({ title: "Error", description: "Failed to record hearing.", variant: "destructive" });
-        },
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to save hearing");
       }
-    );
+
+      toast({ title: "Hearing Recorded", description: "The hearing has been added and the case updated." });
+      setForm({ hearingDate: "", hearingType: "", courtRoom: caseDetail.courtName, result: "Scheduled", notes: "" });
+      await qc.invalidateQueries({ queryKey: getGetCaseQueryKey(caseDetail.id) });
+    } catch (err) {
+      console.error("Failed to save hearing:", err);
+      toast({ title: "Error", description: err instanceof Error ? err.message : "Failed to record hearing.", variant: "destructive" });
+    }
   };
 
   const sorted = [...caseDetail.hearings].sort((a, b) => new Date(b.hearingDate).getTime() - new Date(a.hearingDate).getTime());
