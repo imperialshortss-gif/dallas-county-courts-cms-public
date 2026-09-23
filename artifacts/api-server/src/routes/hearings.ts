@@ -53,7 +53,8 @@ router.post("/hearings", requireAuth, async (req, res) => {
     res.status(201).json(hearing);
   } catch (err) {
     req.log.error({ err }, "Error creating hearing");
-    res.status(500).json({ error: "Internal server error" });
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: message });
   }
 });
 
