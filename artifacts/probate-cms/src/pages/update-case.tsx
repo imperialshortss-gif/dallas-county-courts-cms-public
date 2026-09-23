@@ -155,6 +155,8 @@ function HearingUpdateTab({ caseDetail }: { caseDetail: CaseDetail }) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const mutation = useCreateHearing();
+  const [editingHearingId, setEditingHearingId] = useState<number | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const [form, setForm] = useState({
     hearingDate: "",
@@ -172,6 +174,38 @@ function HearingUpdateTab({ caseDetail }: { caseDetail: CaseDetail }) {
       toast({ title: "Validation Error", description: "Please fill in all required fields.", variant: "destructive" });
       return;
     }
+    if (editingHearingId !== null) {
+      setSavingEdit(true);
+      try {
+        const response = await fetch(`/api/hearings/${editingHearingId}`, {
+          method: "PUT",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            caseId: caseDetail.id,
+            caseNumber: caseDetail.caseNumber,
+            caseTitle: caseDetail.title,
+            hearingDate: form.hearingDate,
+            hearingType: form.hearingType,
+            courtRoom: form.courtRoom,
+            result: form.result,
+            notes: form.notes || null,
+            updatedBy: UPDATED_BY,
+          }),
+        });
+        if (!response.ok) throw new Error(await response.text());
+        toast({ title: "Hearing Updated", description: "The hearing has been updated successfully." });
+        setEditingHearingId(null);
+        setForm({ hearingDate: "", hearingType: "", courtRoom: caseDetail.courtName, result: "Scheduled", notes: "" });
+        await qc.invalidateQueries({ queryKey: getGetCaseQueryKey(caseDetail.id) });
+      } catch {
+        toast({ title: "Error", description: "Failed to update hearing.", variant: "destructive" });
+      } finally {
+        setSavingEdit(false);
+      }
+      return;
+    }
+
     mutation.mutate(
       {
         data: {
@@ -266,9 +300,19 @@ function HearingUpdateTab({ caseDetail }: { caseDetail: CaseDetail }) {
                 placeholder="Any additional notes about this hearing…" />
             </div>
             <div className="md:col-span-2 flex justify-end">
-              <Button type="submit" disabled={mutation.isPending}>
-                {mutation.isPending ? "Saving…" : "Save Hearing"}
-              </Button>
+              <div className="flex gap-2">
+                {editingHearingId !== null && (
+                  <Button type="button" variant="outline" onClick={() => {
+                    setEditingHearingId(null);
+                    setForm({ hearingDate: "", hearingType: "", courtRoom: caseDetail.courtName, result: "Scheduled", notes: "" });
+                  }}>
+                    Cancel Edit
+                  </Button>
+                )}
+                <Button type="submit" disabled={mutation.isPending || savingEdit}>
+                  {savingEdit ? "Updating…" : mutation.isPending ? "Saving…" : editingHearingId !== null ? "Update Hearing" : "Save Hearing"}
+                </Button>
+              </div>
             </div>
           </form>
         </CardContent>
@@ -290,6 +334,7 @@ function HearingUpdateTab({ caseDetail }: { caseDetail: CaseDetail }) {
                   <TableHead>Court Room</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Notes</TableHead>
+                <TableHead className="w-24">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -300,6 +345,21 @@ function HearingUpdateTab({ caseDetail }: { caseDetail: CaseDetail }) {
                     <TableCell>{h.courtRoom}</TableCell>
                     <TableCell><span className="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700">{h.result}</span></TableCell>
                     <TableCell className="text-muted-foreground text-sm">{h.notes ?? '–'}</TableCell>
+                    <TableCell>
+                      <Button type="button" variant="ghost" size="sm" onClick={() => {
+                        setEditingHearingId(h.id);
+                        setForm({
+                          hearingDate: String(h.hearingDate).slice(0, 10),
+                          hearingType: h.hearingType || "",
+                          courtRoom: h.courtRoom || caseDetail.courtName,
+                          result: h.result || "Scheduled",
+                          notes: h.notes || "",
+                        });
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}>
+                        Edit
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
