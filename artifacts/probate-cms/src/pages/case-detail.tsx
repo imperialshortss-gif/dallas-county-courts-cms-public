@@ -10,7 +10,7 @@ import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   FileText, Users, Calendar, DollarSign, BellRing, FileUp,
-  Clock, Plus, CreditCard, StickyNote, CalendarPlus, Info, CheckCircle2
+  Clock, Plus, CreditCard, StickyNote, CalendarPlus, Info, CheckCircle2, ExternalLink
 } from "lucide-react";
 
 function safeDate(val: string | null | undefined) {
@@ -385,6 +385,7 @@ export default function CaseDetail() {
                         <TableHead>Uploaded By</TableHead>
                         <TableHead>Date</TableHead>
                         <TableHead>Size</TableHead>
+                        <TableHead>Access</TableHead>
                         <TableHead>Notes</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -399,11 +400,18 @@ export default function CaseDetail() {
                           <TableCell>{doc.uploadedBy}</TableCell>
                           <TableCell className="whitespace-nowrap">{fmt(doc.uploadedDate)}</TableCell>
                           <TableCell className="text-muted-foreground">{doc.sizeKb ? `${(doc.sizeKb / 1024).toFixed(1)} MB` : "—"}</TableCell>
+                          <TableCell>
+                            <Button variant="outline" size="sm" asChild>
+                              <a href={`/api/documents/${doc.id}/file`} target="_blank" rel="noopener noreferrer">
+                                <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> View File
+                              </a>
+                            </Button>
+                          </TableCell>
                           <TableCell className="text-sm text-muted-foreground max-w-xs truncate" title={doc.notes || ""}>{doc.notes || "—"}</TableCell>
                         </TableRow>
                       ))}
                       {caseDetail.documents.length === 0 && (
-                        <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">No documents uploaded.</TableCell></TableRow>
+                        <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">No documents uploaded.</TableCell></TableRow>
                       )}
                     </TableBody>
                   </Table>
