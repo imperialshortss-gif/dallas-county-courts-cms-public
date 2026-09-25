@@ -11,6 +11,8 @@ export const documentsTable = pgTable("documents", {
   uploadedDate: text("uploaded_date").notNull(),
   category: text("category").notNull(),
   sizeKb: integer("size_kb").notNull(),
+  mimeType: text("mime_type"),
+  fileData: text("file_data"),
 });
 
 export const insertDocumentSchema = createInsertSchema(documentsTable).omit({ id: true });
