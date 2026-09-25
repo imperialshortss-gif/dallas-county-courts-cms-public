@@ -934,7 +934,6 @@ function StatusUpdateTab({ caseDetail }: { caseDetail: CaseDetail }) {
 function DocumentsTab({ caseDetail }: { caseDetail: CaseDetail }) {
   const { toast } = useToast();
   const qc = useQueryClient();
-  const mutation = useCreateDocument();
 
   const [form, setForm] = useState({
     fileName: "",
@@ -943,56 +942,143 @@ function DocumentsTab({ caseDetail }: { caseDetail: CaseDetail }) {
     uploadedBy: "",
     sizeKb: "",
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const update = (field: string, val: string) => setForm(prev => ({ ...prev, [field]: val }));
 
+  const handleFileChange = (file: File | null) => {
+    setSelectedFile(file);
+    if (!file) return;
+
+    const extension = file.name.split(".").pop()?.toUpperCase() || "Other";
+    const supported = ["PDF", "DOCX", "XLSX", "JPG", "PNG", "TXT"];
+    setForm(prev => ({
+      ...prev,
+      fileName: file.name,
+      fileType: supported.includes(extension) ? extension : "Other",
+      sizeKb: String(Math.ceil(file.size / 1024)),
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.fileName || !form.category || !form.uploadedBy) {
-      toast({ title: "Validation Error", description: "Please fill in all required fields.", variant: "destructive" });
+
+    if (!selectedFile || !form.category || !form.uploadedBy) {
+      toast({
+        title: "Validation Error",
+        description: "Please select a file, category, and uploaded by name.",
+        variant: "destructive",
+      });
       return;
     }
-    mutation.mutate(
-      {
-        data: {
+
+    if (selectedFile.size > 4 * 1024 * 1024) {
+      toast({
+        title: "File Too Large",
+        description: "Please select a file smaller than 4 MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result !== "string") {
+            reject(new Error("Unable to read the selected file."));
+            return;
+          }
+          resolve(reader.result);
+        };
+        reader.onerror = () => reject(new Error("Unable to read the selected file."));
+        reader.readAsDataURL(selectedFile);
+      });
+
+      const commaIndex = dataUrl.indexOf(",");
+      const fileData = commaIndex >= 0 ? dataUrl.slice(commaIndex + 1) : dataUrl;
+
+      const response = await fetch("/api/documents", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           caseId: caseDetail.id,
           fileName: form.fileName,
           fileType: form.fileType,
           uploadedBy: form.uploadedBy,
           uploadedDate: new Date().toISOString().split("T")[0],
           category: form.category,
-          sizeKb: parseInt(form.sizeKb || "0", 10),
-        },
-      },
-      {
-        onSuccess: () => {
-          toast({ title: "Document Recorded", description: `${form.fileName} has been added.` });
-          setForm({ fileName: "", fileType: "PDF", category: "", uploadedBy: "", sizeKb: "" });
-          qc.invalidateQueries({ queryKey: getGetCaseQueryKey(caseDetail.id) });
-        },
-        onError: () => toast({ title: "Error", description: "Failed to record document.", variant: "destructive" }),
+          sizeKb: Math.ceil(selectedFile.size / 1024),
+          mimeType: selectedFile.type || "application/octet-stream",
+          fileData,
+        }),
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to upload document.");
       }
-    );
+
+      toast({
+        title: "Document Uploaded",
+        description: `${form.fileName} is now attached to this case.`,
+      });
+
+      setForm({ fileName: "", fileType: "PDF", category: "", uploadedBy: "", sizeKb: "" });
+      setSelectedFile(null);
+      const input = document.getElementById("case-document-file") as HTMLInputElement | null;
+      if (input) input.value = "";
+      await qc.invalidateQueries({ queryKey: getGetCaseQueryKey(caseDetail.id) });
+    } catch (err) {
+      toast({
+        title: "Upload Error",
+        description: err instanceof Error ? err.message : "Failed to upload document.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
-  const sorted = [...caseDetail.documents].sort((a, b) => new Date(b.uploadedDate).getTime() - new Date(a.uploadedDate).getTime());
+  const sorted = [...caseDetail.documents].sort((a, b) =>
+    new Date(b.uploadedDate).getTime() - new Date(a.uploadedDate).getTime()
+  );
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader className="pb-4">
           <CardTitle className="text-base flex items-center gap-2">
-            <FileUp className="h-4 w-4 text-primary" /> Register New Document
+            <FileUp className="h-4 w-4 text-primary" /> Upload Case Document
           </CardTitle>
-          <CardDescription>Record document metadata. All existing documents are preserved.</CardDescription>
+          <CardDescription>
+            Upload a PDF or other document. The file will be attached to this case and available to people viewing the case.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5 md:col-span-2">
-              <Label>File Name <span className="text-red-500">*</span></Label>
-              <Input value={form.fileName} onChange={e => update("fileName", e.target.value)}
-                placeholder="e.g. Final_Account_Whitfield.pdf" required />
+              <Label>File <span className="text-red-500">*</span></Label>
+              <Input
+                id="case-document-file"
+                type="file"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt"
+                onChange={e => handleFileChange(e.target.files?.[0] || null)}
+                required
+              />
+              <p className="text-xs text-muted-foreground">Maximum file size: 4 MB.</p>
             </div>
+
+            <div className="space-y-1.5">
+              <Label>File Name</Label>
+              <Input value={form.fileName} readOnly placeholder="Select a file above" />
+            </div>
+
             <div className="space-y-1.5">
               <Label>File Type</Label>
               <Select value={form.fileType} onValueChange={v => update("fileType", v)}>
@@ -1004,12 +1090,11 @@ function DocumentsTab({ caseDetail }: { caseDetail: CaseDetail }) {
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-1.5">
               <Label>Category <span className="text-red-500">*</span></Label>
               <Select value={form.category} onValueChange={v => update("category", v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category…" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Select category…" /></SelectTrigger>
                 <SelectContent>
                   {["Will & Testament", "Court Orders", "Applications", "Pleadings", "Inventory",
                     "Accounting", "Annual Reports", "Medical Records", "Official Records", "Discovery",
@@ -1019,19 +1104,21 @@ function DocumentsTab({ caseDetail }: { caseDetail: CaseDetail }) {
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-1.5">
               <Label>Uploaded By <span className="text-red-500">*</span></Label>
               <Input value={form.uploadedBy} onChange={e => update("uploadedBy", e.target.value)}
                 placeholder="e.g. Jane Smith, Esq." required />
             </div>
+
             <div className="space-y-1.5">
-              <Label>File Size (KB)</Label>
-              <Input type="number" min="0" value={form.sizeKb} onChange={e => update("sizeKb", e.target.value)}
-                placeholder="e.g. 512" />
+              <Label>File Size</Label>
+              <Input value={form.sizeKb ? `${form.sizeKb} KB` : ""} readOnly placeholder="Calculated automatically" />
             </div>
+
             <div className="md:col-span-2 flex justify-end">
-              <Button type="submit" disabled={mutation.isPending}>
-                {mutation.isPending ? "Saving…" : "Register Document"}
+              <Button type="submit" disabled={isUploading}>
+                {isUploading ? "Uploading…" : "Upload Document"}
               </Button>
             </div>
           </form>
@@ -1075,7 +1162,6 @@ function DocumentsTab({ caseDetail }: { caseDetail: CaseDetail }) {
     </div>
   );
 }
-
 function ActivityTab({ caseDetail }: { caseDetail: CaseDetail }) {
   const { toast } = useToast();
   const qc = useQueryClient();
