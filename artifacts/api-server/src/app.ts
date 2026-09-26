@@ -7,8 +7,18 @@ import fs from "fs";
 import ConnectPgSimple from "connect-pg-simple";
 import router from "./routes/index.js";
 import { logger } from "./lib/logger.js";
+import { pool } from "@workspace/db";
 
 const app: Express = express();
+
+const databaseSchemaReady = pool.query(
+  `ALTER TABLE documents
+   ADD COLUMN IF NOT EXISTS mime_type text,
+   ADD COLUMN IF NOT EXISTS file_data text`
+).catch((err) => {
+  logger.error({ err }, "Unable to ensure document file columns exist");
+  throw err;
+});
 
 const isProduction = process.env["NODE_ENV"] === "production";
 
@@ -37,6 +47,15 @@ app.use(
     },
   }),
 );
+
+app.use(async (_req, _res, next) => {
+  try {
+    await databaseSchemaReady;
+    next();
+  } catch {
+    next(new Error("Database schema initialization failed"));
+  }
+});
 
 app.use(cors({
   origin: true,
