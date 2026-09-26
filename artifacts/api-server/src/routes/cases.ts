@@ -111,7 +111,19 @@ router.get("/cases/:id", async (req, res) => {
       db.select().from(hearingsTable).where(eq(hearingsTable.caseId, id)).orderBy(hearingsTable.hearingDate),
       db.select().from(feesTable).where(eq(feesTable.caseId, id)),
       db.select().from(noticesTable).where(eq(noticesTable.caseId, id)),
-      db.select().from(documentsTable).where(eq(documentsTable.caseId, id)),
+      db
+        .select({
+          id: documentsTable.id,
+          caseId: documentsTable.caseId,
+          fileName: documentsTable.fileName,
+          fileType: documentsTable.fileType,
+          uploadedBy: documentsTable.uploadedBy,
+          uploadedDate: documentsTable.uploadedDate,
+          category: documentsTable.category,
+          sizeKb: documentsTable.sizeKb,
+        })
+        .from(documentsTable)
+        .where(eq(documentsTable.caseId, id)),
       db.select().from(activityTable).where(eq(activityTable.caseId, id)).orderBy(activityTable.timestamp),
     ]);
 
