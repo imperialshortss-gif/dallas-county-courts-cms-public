@@ -86,35 +86,45 @@ router.post("/fees", requireAuth, async (req, res) => {
         .returning();
     }
 
-    // Recalculate pending fees for this case
-    const pendingResult = await db
-      .select({ total: sql<string>`coalesce(sum(amount), 0)` })
-      .from(feesTable)
-      .where(sql`case_id = ${caseId} AND status = 'pending'`);
-    const pendingTotal = pendingResult[0]?.total ?? "0";
-    const updateFields: Record<string, any> = { pendingFees: pendingTotal };
-    if (status === "paid" && paidDate) {
-      updateFields.lastPaidFee = String(amount);
-      updateFields.lastPaidFeeDate = paidDate;
+    // Update the case's fee summary. Keep this separate from the fee record itself
+    // so a summary/activity problem cannot make an otherwise successful payment look failed.
+    try {
+      const pendingResult = await db
+        .select({ total: sql<string>`coalesce(sum(amount), 0)` })
+        .from(feesTable)
+        .where(sql`case_id = ${caseId} AND status = 'pending'`);
+      const pendingTotal = pendingResult[0]?.total ?? "0";
+      const updateFields: Record<string, any> = { pendingFees: pendingTotal };
+      if (status === "paid" && paidDate) {
+        updateFields.lastPaidFee = String(amount);
+        updateFields.lastPaidFeeDate = paidDate;
+      }
+      await db
+        .update(casesTable)
+        .set(updateFields)
+        .where(eq(casesTable.id, caseId));
+    } catch (summaryErr) {
+      req.log.error({ err: summaryErr, caseId }, "Fee saved but case fee summary could not be updated");
     }
-    await db
-      .update(casesTable)
-      .set(updateFields)
-      .where(eq(casesTable.id, caseId));
 
-    // Auto-log activity
-    const caseRow = await db
-      .select({ caseNumber: casesTable.caseNumber })
-      .from(casesTable)
-      .where(eq(casesTable.id, caseId));
-    const caseNumber = caseRow[0]?.caseNumber ?? "";
-    await db.insert(activityTable).values({
-      caseId,
-      caseNumber,
-      action: status === "paid" ? "Fee Payment Recorded" : "Fee Assessed",
-      user: req.body.updatedBy || "Court Staff",
-      details: `${description} – $${Number(amount).toFixed(2)} (${status})${receiptNumber ? ` – Receipt: ${receiptNumber}` : ""}`,
-    });
+    // Activity logging is best-effort. It must not turn a successfully saved
+    // fee/payment into a 500 response.
+    try {
+      const caseRow = await db
+        .select({ caseNumber: casesTable.caseNumber })
+        .from(casesTable)
+        .where(eq(casesTable.id, caseId));
+      const caseNumber = caseRow[0]?.caseNumber ?? "";
+      await db.insert(activityTable).values({
+        caseId,
+        caseNumber,
+        action: status === "paid" ? "Fee Payment Recorded" : "Fee Assessed",
+        user: req.body.updatedBy || "Court Staff",
+        details: `${description} – ${Number(amount).toFixed(2)} (${status})${receiptNumber ? ` – Receipt: ${receiptNumber}` : ""}`,
+      });
+    } catch (activityErr) {
+      req.log.error({ err: activityErr, caseId }, "Fee saved but activity log could not be recorded");
+    }
 
     res.status(201).json({ ...fee, amount: Number(fee.amount) });
   } catch (err) {
