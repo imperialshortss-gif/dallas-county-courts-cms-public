@@ -62,7 +62,8 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(express.json());
+// Base64 encoding increases uploaded file size by roughly 33%; allow document uploads.
+app.use(express.json({ limit: "8mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 const sessionSecret = process.env["SESSION_SECRET"] || "dallas-probate-cms-secret-2024";
