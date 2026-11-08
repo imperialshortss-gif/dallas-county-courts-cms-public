@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useSearch } from "wouter";
 import { Layout } from "@/components/layout";
 import { useListCases, getListCasesQueryKey } from "@workspace/api-client-react";
@@ -12,6 +12,29 @@ import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 
+type CaseDocument = { id: number; fileName: string; fileType?: string | null; category?: string | null; };
+
+function CaseDocumentsCell({ caseId }: { caseId: number }) {
+  const [documents, setDocuments] = useState<CaseDocument[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => {
+    let active = true;
+    fetch('/api/documents?caseId=' + caseId)
+      .then(async (response) => { if (!response.ok) throw new Error('Unable to load documents'); return response.json(); })
+      .then((items: CaseDocument[]) => { if (active) setDocuments(items); })
+      .catch(() => { if (active) setDocuments([]); })
+      .finally(() => { if (active) setLoaded(true); });
+    return () => { active = false; };
+  }, [caseId]);
+  if (!loaded) return <span className="text-xs text-muted-foreground">Loading…</span>;
+  if (documents.length === 0) return <span className="text-xs text-muted-foreground">—</span>;
+  return <div className="flex flex-col gap-1 min-w-[150px]">{documents.map((doc) => (
+    <a key={doc.id} href={'/api/documents/' + doc.id + '/file'} target="_blank" rel="noopener noreferrer"
+      className="text-xs text-primary hover:underline inline-flex items-center gap-1" title={doc.fileName}>
+      <span aria-hidden="true">📎</span><span className="max-w-[180px] truncate">{doc.fileName}</span>
+    </a>
+  ))}</div>;
+}
 export default function SearchCases() {
   const [location, setLocation] = useLocation();
   const searchParams = new URLSearchParams(useSearch());
@@ -145,6 +168,7 @@ export default function SearchCases() {
                   <TableHead className="font-semibold text-foreground">Next Court Date</TableHead>
                   <TableHead className="font-semibold text-foreground">Status</TableHead>
                   <TableHead className="font-semibold text-foreground">Pending Fees</TableHead>
+                  <TableHead className="font-semibold text-foreground">Attachments</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -156,11 +180,12 @@ export default function SearchCases() {
                       <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                       <TableCell><Skeleton className="h-6 w-16 rounded-full" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                     </TableRow>
                   ))
                 ) : data?.cases?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                    <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
                       <div className="flex flex-col items-center justify-center gap-2">
                         <SearchIcon className="h-8 w-8 text-muted-foreground/50" />
                         <p>No cases found matching your criteria.</p>
@@ -190,6 +215,7 @@ export default function SearchCases() {
                           ${(caseItem.pendingFees || 0).toFixed(2)}
                         </span>
                       </TableCell>
+                      <TableCell><CaseDocumentsCell caseId={caseItem.id} /></TableCell>
                     </TableRow>
                   ))
                 )}
